@@ -164,7 +164,7 @@ module ActiveAdmin
 
           span do
             h4 I18n.t("active_admin.search_status.headline"), style: 'display: inline'
-            b active.scope, style: "display: inline"
+            b I18n.t(active.scope), style: "display: inline"
 
             div style: "margin-top: 10px" do
               h4 I18n.t("active_admin.search_status.current_filters"), style: 'margin-bottom: 10px'
@@ -174,8 +174,8 @@ module ActiveAdmin
                 else
                   active.filters.each do |filter|
                     li do
-                      span filter.body
-                      b filter.value
+                      span I18n.t filter.body
+                      b I18n.t filter.value
                     end
                   end
                 end
