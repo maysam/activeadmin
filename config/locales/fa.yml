@@ -118,3 +118,7 @@ fa:
       block: "لیست"
       grid: "گرید"
       blog: "وبلاگ"
+    search_status:
+      no_current_filters: هیچ
+      current_filters: فیلتر‌های فعلی
+      headline: در
