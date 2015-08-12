@@ -163,9 +163,10 @@ module ActiveAdmin
           active = ActiveAdmin::Filters::Active.new(resource_class, params)
 
           span do
-            h4 I18n.t("active_admin.search_status.headline"), style: 'display: inline'
-            b I18n.t(active.scope), style: "display: inline"
-
+            if active.scope != 'All'
+              h4 I18n.t("active_admin.search_status.headline"), style: 'display: inline'
+              b I18n.t(active.scope), style: "display: inline"
+            end
             div style: "margin-top: 10px" do
               h4 I18n.t("active_admin.search_status.current_filters"), style: 'margin-bottom: 10px'
               ul do
@@ -175,7 +176,7 @@ module ActiveAdmin
                   active.filters.each do |filter|
                     li do
                       span I18n.t filter.body
-                      b I18n.t filter.value
+                      b filter.value
                     end
                   end
                 end
