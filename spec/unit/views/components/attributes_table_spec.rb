@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe ActiveAdmin::Views::AttributesTable do
+RSpec.describe ActiveAdmin::Views::AttributesTable do
 
   describe "creating with the dsl" do
     let(:helpers) { action_view }
@@ -139,7 +139,7 @@ describe ActiveAdmin::Views::AttributesTable do
       end
       it 'should call the association if one exists' do
         table = render_arbre_component assigns do
-          attributes_table_for post, :author_id
+          attributes_table_for post, :author
         end
         expect(table.find_by_tag('th').first.content).to eq 'Author'
         expect(table.find_by_tag('td').first.content).to eq 'John Doe'
@@ -170,7 +170,7 @@ describe ActiveAdmin::Views::AttributesTable do
       end
 
       it "does not set id on the table" do
-        expect(table.attr(:id)).to be_nil
+        expect(table.attr(:id)).to eq nil
       end
 
       context "colgroup" do
@@ -235,7 +235,6 @@ describe ActiveAdmin::Views::AttributesTable do
       end # describe rendering rows
     end # with a collection
 
-
     context "when using a single Hash" do
       let(:table) do
         render_arbre_component nil, helpers do
@@ -256,7 +255,7 @@ describe ActiveAdmin::Views::AttributesTable do
     context "when using an Array of Hashes" do
       let(:table) do
         render_arbre_component nil, helpers do
-          attributes_table_for [{foo: 1},{foo: 2}] do
+          attributes_table_for [{foo: 1}, {foo: 2}] do
             row :foo
           end
         end

@@ -1,3 +1,4 @@
+@locale_manipulation
 Feature: Internationalization
 
   ActiveAdmin should use the translations provided by the host app.
@@ -41,3 +42,14 @@ Feature: Internationalization
     When I go to the dashboard
     When I follow "Bookstores"
     Then I should see "Download this:"
+
+  Scenario: Overriding resource details table title
+    Given a configuration of:
+    """
+      ActiveAdmin.register Post
+    """
+    And String "Post detailed information" corresponds to "resources.post.details"
+    And I am logged in
+    And a post exists
+    When I go to the last post's show page
+    Then I should see "Post detailed information"

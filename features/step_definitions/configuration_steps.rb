@@ -1,8 +1,8 @@
 module ActiveAdminReloading
   def load_aa_config(config_content)
-    ActiveAdmin::Event.dispatch ActiveAdmin::Application::BeforeLoadEvent, ActiveAdmin.application
+    ActiveSupport::Notifications.publish ActiveAdmin::Application::BeforeLoadEvent, ActiveAdmin.application
     eval(config_content)
-    ActiveAdmin::Event.dispatch ActiveAdmin::Application::AfterLoadEvent,  ActiveAdmin.application
+    ActiveSupport::Notifications.publish ActiveAdmin::Application::AfterLoadEvent, ActiveAdmin.application
     Rails.application.reload_routes!
     ActiveAdmin.application.namespaces.each &:reset_menu!
   end
@@ -30,7 +30,7 @@ module ActiveAdminContentsRollback
   # Else, remove the file and its parent folder structure until Rails.root OR other files exist.
   def rollback_file(file, contents)
     if contents.present?
-      File.open(file,'w') { |f| f << contents }
+      File.open(file, 'w') { |f| f << contents }
     else
       File.delete(file)
       begin
@@ -87,7 +87,7 @@ Given /^"([^"]*)" contains:$/ do |filename, contents|
   FileUtils.mkdir_p File.dirname path
   record path
 
-  File.open(path,'w+'){ |f| f << contents }
+  File.open(path, 'w+'){ |f| f << contents }
 end
 
 Given /^I add "([^"]*)" to the "([^"]*)" model$/ do |code, model_name|

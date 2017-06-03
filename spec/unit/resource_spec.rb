@@ -2,7 +2,7 @@ require 'rails_helper'
 require File.expand_path('config_shared_examples', File.dirname(__FILE__))
 
 module ActiveAdmin
-  describe Resource do
+  RSpec.describe Resource do
 
     it_should_behave_like "ActiveAdmin::Resource"
     before { load_defaults! }
@@ -35,7 +35,7 @@ module ActiveAdmin
 
     describe '#decorator_class' do
       it 'returns nil by default' do
-        expect(config.decorator_class).to be_nil
+        expect(config.decorator_class).to eq nil
       end
       context 'when a decorator is defined' do
         let(:resource) { namespace.register(Post) { decorate_with PostDecorator } }
@@ -48,7 +48,6 @@ module ActiveAdmin
         end
       end
     end
-
 
     describe "controller name" do
       it "should return a namespaced controller name" do
@@ -80,15 +79,15 @@ module ActiveAdmin
     describe "#belongs_to" do
 
       it "should build a belongs to configuration" do
-        expect(config.belongs_to_config).to be_nil
+        expect(config.belongs_to_config).to eq nil
         config.belongs_to :posts
-        expect(config.belongs_to_config).to_not be_nil
+        expect(config.belongs_to_config).to_not eq nil
       end
 
-      it "should set the target menu to the belongs to target" do
+      it "should not set the target menu to the belongs to target" do
         expect(config.navigation_menu_name).to eq ActiveAdmin::DEFAULT_MENU
         config.belongs_to :posts
-        expect(config.navigation_menu_name).to eq :posts
+        expect(config.navigation_menu_name).to eq ActiveAdmin::DEFAULT_MENU
       end
 
     end
@@ -146,8 +145,9 @@ module ActiveAdmin
       end
     end
 
-
     describe "sort order" do
+      class MockResource
+      end
 
       context "when resource class responds to primary_key" do
         it "should sort by primary key desc by default" do
@@ -177,6 +177,15 @@ module ActiveAdmin
         config.scope :published
         expect(config.scopes.first).to be_a(ActiveAdmin::Scope)
         expect(config.scopes.first.name).to eq "Published"
+        expect(config.scopes.first.show_count).to eq true
+      end
+
+      context 'when show_count disabled' do
+        it "should add a scope show_count = false" do
+          namespace.scopes_show_count = false
+          config.scope :published
+          expect(config.scopes.first.show_count).to eq false
+        end
       end
 
       it "should retrive a scope by its id" do
@@ -195,7 +204,7 @@ module ActiveAdmin
     describe "#csv_builder" do
       context "when no csv builder set" do
         it "should return a default column builder with id and content columns" do
-          expect(config.csv_builder.exec_columns.size).to eq Category.content_columns.size + 1
+          expect(config.csv_builder.exec_columns.size).to eq @config.content_columns.size + 1
         end
       end
 
@@ -218,12 +227,12 @@ module ActiveAdmin
       context "when breadcrumb is set" do
         context "when set to true" do
           before { config.breadcrumb = true }
-          it { is_expected.to be_truthy }
+          it { is_expected.to eq true }
         end
 
         context "when set to false" do
           before { config.breadcrumb = false }
-          it { is_expected.to be_falsey }
+          it { is_expected.to eq false }
         end
       end
     end
@@ -232,11 +241,8 @@ module ActiveAdmin
       let(:resource) { namespace.register(Post) }
       let(:post) { double }
       before do
-        if Rails::VERSION::MAJOR >= 4
-          allow(Post).to receive(:find_by).with("id" => "12345") { post }
-        else
-          allow(Post).to receive(:find_by_id).with("12345") { post }
-        end
+        allow(Post).to receive(:find_by).with("id" => "12345") { post }
+        allow(Post).to receive(:find_by).with("id" => "54321") { nil }
       end
 
       it 'can find the resource' do
@@ -248,19 +254,18 @@ module ActiveAdmin
         it 'decorates the resource' do
           expect(resource.find_resource('12345')).to eq PostDecorator.new(post)
         end
+
+        it 'does not decorate a not found resource' do
+          expect(resource.find_resource('54321')).to equal nil
+        end
       end
 
       context 'when using a nonstandard primary key' do
         let(:different_post) { double }
         before do
           allow(Post).to receive(:primary_key).and_return 'something_else'
-          if Rails::VERSION::MAJOR >= 4
-            allow(Post).to receive(:find_by).
+          allow(Post).to receive(:find_by).
               with("something_else" => "55555") { different_post }
-          else
-            allow(Post).to receive(:find_by_something_else).
-              with("55555") { different_post }
-          end
         end
 
         it 'can find the post by the custom primary key' do
@@ -293,34 +298,20 @@ module ActiveAdmin
           end
         end.new
       }
-      let(:resource) { ActiveAdmin::ResourceDSL.new(double, double) }
+      let(:resource) { ActiveAdmin::ResourceDSL.new(double) }
 
       before do
         expect(resource).to receive(:controller).and_return(controller)
       end
 
-      context "filters" do
+      context "actions" do
         [
-          :before_filter, :skip_before_filter,
-          :after_filter, :skip_after_filter,
-          :around_filter, :skip_filter
-        ].each do |filter|
-          it "delegates #{filter}" do
-            expect(resource.send(filter)).to eq "called #{filter}"
-          end
-        end
-      end
-
-      if Rails::VERSION::MAJOR == 4
-        context "actions" do
-          [
-            :before_action, :skip_before_action,
-            :after_action, :skip_after_action,
-            :around_action, :skip_action
-          ].each do |action|
-            it "delegates #{action}" do
-              expect(resource.send(action)).to eq "called #{action}"
-            end
+          :before_action, :skip_before_action,
+          :after_action, :skip_after_action,
+          :around_action, :skip_action
+        ].each do |method|
+          it "delegates #{method}" do
+            expect(resource.send(method)).to eq "called #{method}"
           end
         end
       end

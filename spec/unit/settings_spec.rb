@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe ActiveAdmin::Settings do
+RSpec.describe ActiveAdmin::Settings do
 
   subject{ Class.new{ include ActiveAdmin::Settings } }
 
@@ -45,8 +45,7 @@ describe ActiveAdmin::Settings do
 
 end
 
-
-describe ActiveAdmin::Settings::Inheritance do
+RSpec.describe ActiveAdmin::Settings::Inheritance do
 
   subject do
     Class.new do

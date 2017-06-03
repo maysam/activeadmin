@@ -1,16 +1,15 @@
 require 'rails_helper'
 
-
 module MockModuleToInclude
   def self.included(dsl)
   end
 end
 
-describe ActiveAdmin::DSL do
+RSpec.describe ActiveAdmin::DSL do
 
   let(:application) { ActiveAdmin::Application.new }
   let(:namespace) { ActiveAdmin::Namespace.new application, :admin }
-  let(:resource_config) { ActiveAdmin::Resource.new namespace, Post }
+  let(:resource_config) { namespace.register Post }
   let(:dsl){ ActiveAdmin::DSL.new(resource_config) }
 
   describe "#include" do
@@ -23,7 +22,6 @@ describe ActiveAdmin::DSL do
     end
 
   end
-
 
   describe '#action_item' do
     before do
@@ -97,7 +95,7 @@ describe ActiveAdmin::DSL do
       dsl.run_registration_block do
         sidebar :help
       end
-      expect(dsl.config.sidebar_sections.map(&:name)).to match_array %w{filters search_status email help}
+      expect(dsl.config.sidebar_sections.map(&:name)).to match_array ['filters', 'Search status:', 'email', 'help']
     end
 
   end

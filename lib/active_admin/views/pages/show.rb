@@ -25,7 +25,13 @@ module ActiveAdmin
         end
 
         def attributes_table(*args, &block)
-          panel(I18n.t('active_admin.details', model: active_admin_config.resource_label)) do
+          opts = args.extract_options!
+          table_title = if opts.has_key?(:title)
+                          render_or_call_method_or_proc_on(resource, opts[:title])
+                        else
+                          ActiveAdmin::Localizers.resource(active_admin_config).t(:details)
+                        end
+          panel(table_title) do
             attributes_table_for resource, *args, &block
           end
         end
@@ -48,7 +54,7 @@ module ActiveAdmin
           end
 
           def default_attribute_table_rows
-            resource.class.columns.collect{|column| column.name.to_sym }
+            active_admin_config.resource_columns
           end
         end
 

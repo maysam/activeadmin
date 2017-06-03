@@ -1,8 +1,7 @@
 require 'rails_helper'
 require "rspec/mocks/standalone"
 
-describe ActiveAdmin::FormBuilder do
-
+RSpec.describe ActiveAdmin::FormBuilder do
   # Setup an ActionView::Base object which can be used for
   # generating the form for.
   let(:helpers) do
@@ -29,6 +28,10 @@ describe ActiveAdmin::FormBuilder do
 
     def view.fa_icon(*args)
       args.inspect
+    end
+
+    def view.action_name
+      'edit'
     end
 
     view
@@ -63,7 +66,7 @@ describe ActiveAdmin::FormBuilder do
     context "it with custom settings" do
       let :body do
         build_form do |f|
-          f.inputs class: "custom_class" do
+          f.inputs class: "custom_class", name: 'custom_name', custom_attr: 'custom_attr' do
             f.input :title
             f.input :body
           end
@@ -71,7 +74,15 @@ describe ActiveAdmin::FormBuilder do
       end
 
       it "should generate a fieldset with a inputs and custom class" do
-        expect(body).to have_selector("fieldset.inputs.custom_class")
+        expect(body).to have_selector("fieldset.custom_class")
+      end
+
+      it "should generate a fieldset with a custom legend" do
+        expect(body).to have_css("legend", text: 'custom_name')
+      end
+
+      it "should generate a fieldset with a custom attributes" do
+        expect(body).to have_selector("fieldset[custom_attr='custom_attr']")
       end
     end
   end
@@ -90,9 +101,9 @@ describe ActiveAdmin::FormBuilder do
       end
     end
 
-   it "should generate a text input" do
-      expect(body).to have_selector("input[type=text][name='post[title]']")
-    end
+    it "should generate a text input" do
+       expect(body).to have_selector("input[type=text][name='post[title]']")
+     end
     it "should generate a textarea" do
       expect(body).to have_selector("textarea[name='post[body]']")
     end
@@ -128,17 +139,15 @@ describe ActiveAdmin::FormBuilder do
     end
   end
 
-  if Rails::VERSION::MAJOR > 3
-    context "file input present" do
-      let :body do
-        build_form do |f|
-          f.input :body, as: :file
-        end
+  context "file input present" do
+    let :body do
+      build_form do |f|
+        f.input :body, as: :file
       end
+    end
 
-      it "adds multipart attribute automatically" do
-        expect(body).to have_selector("form[enctype='multipart/form-data']")
-      end
+    it "adds multipart attribute automatically" do
+      expect(body).to have_selector("form[enctype='multipart/form-data']")
     end
   end
 
@@ -152,13 +161,39 @@ describe ActiveAdmin::FormBuilder do
       end
       expect(body).to have_selector("[id=post_title]", count: 1)
     end
-    it "should generate one button and a cancel link" do
+
+    context "create another checkbox" do
+      subject do
+        build_form do |f|
+          f.actions
+        end
+      end
+
+      %w(new create).each do |action_name|
+        it "generates create another checkbox on #{action_name} page" do
+          expect(helpers).to receive(:action_name) { action_name }
+          allow(helpers).to receive(:active_admin_config) { instance_double(ActiveAdmin::Resource, create_another: true) }
+
+          is_expected.to have_selector("[type=checkbox]", count: 1)
+                            .and have_selector("[name=create_another]", count: 1)
+        end
+      end
+
+      %w(show edit update).each do |action_name|
+        it "doesn't generate create another checkbox on #{action_name} page" do
+          is_expected.not_to have_selector("[name=create_another]", count: 1)
+        end
+      end
+    end
+
+    it "should generate one button create another checkbox and a cancel link" do
       body = build_form do |f|
         f.actions
       end
       expect(body).to have_selector("[type=submit]", count: 1)
       expect(body).to have_selector("[class=cancel]", count: 1)
     end
+
     it "should generate multiple actions" do
       body = build_form do |f|
         f.actions do
@@ -275,6 +310,36 @@ describe ActiveAdmin::FormBuilder do
       end
     end
 
+  end
+
+  context "with inputs component inside has_many" do
+
+    def user
+      u = User.new
+      u.profile = Profile.new(bio: 'bio')
+      u
+    end
+
+    let :body do
+      author = user()
+      build_form do |f|
+        f.form_builder.instance_eval do
+          @object.author = author
+        end
+        f.inputs name: 'Author', for: :author do |author|
+          author.has_many :profile, allow_destroy: true do |profile|
+            profile.inputs  "inputs for profile #{profile.object.bio}" do
+              profile.input :bio
+            end
+          end
+        end
+      end
+    end
+
+    it "should see the profile fields for an existing profile" do
+      expect(body).to have_selector("[id='post_author_attributes_profile_attributes_bio']", count: 1)
+      expect(body).to have_selector("textarea[name='post[author_attributes][profile_attributes][bio]']")
+    end
   end
 
   context "with a has_one relation on an author's profile" do
@@ -402,7 +467,7 @@ describe ActiveAdmin::FormBuilder do
         end
         f.inputs do
           f.input :author
-          f.input :published_at
+          f.input :created_at
         end
       end
     end
@@ -410,10 +475,10 @@ describe ActiveAdmin::FormBuilder do
       expect(body).to have_selector("input[name='post[title]']", count: 1)
       expect(body).to have_selector("textarea[name='post[body]']", count: 1)
       expect(body).to have_selector("select[name='post[author_id]']", count: 1)
-      expect(body).to have_selector("select[name='post[published_at(1i)]']", count: 1)
-      expect(body).to have_selector("select[name='post[published_at(2i)]']", count: 1)
-      expect(body).to have_selector("select[name='post[published_at(3i)]']", count: 1)
-      expect(body).to have_selector("select[name='post[published_at(4i)]']", count: 1)
+      expect(body).to have_selector("select[name='post[created_at(1i)]']", count: 1)
+      expect(body).to have_selector("select[name='post[created_at(2i)]']", count: 1)
+      expect(body).to have_selector("select[name='post[created_at(3i)]']", count: 1)
+      expect(body).to have_selector("select[name='post[created_at(4i)]']", count: 1)
     end
   end
 
@@ -489,7 +554,7 @@ describe ActiveAdmin::FormBuilder do
       let :body do
         build_form({url: '/categories'}, Category.new) do |f|
           f.object.posts.build
-          f.has_many :posts do |p,i|
+          f.has_many :posts do |p, i|
             p.input :title, label: "Title #{i}"
           end
         end
@@ -502,7 +567,6 @@ describe ActiveAdmin::FormBuilder do
       it "should add a custom header" do
         expect(body).to have_selector("h3", text: "Post")
       end
-
     end
 
     describe "without heading and new record link" do
@@ -539,9 +603,8 @@ describe ActiveAdmin::FormBuilder do
       end
 
       it "should add a custom header" do
-        expect(body).to have_selector("h3", "Test heading")
+        expect(body).to have_selector("h3", text: "Test heading")
       end
-
     end
 
     describe "with custom new record link" do
@@ -557,26 +620,20 @@ describe ActiveAdmin::FormBuilder do
       it "should add a custom new record link" do
         expect(body).to have_selector("a", text: "My Custom New Post")
       end
-
     end
 
     describe "with allow destroy" do
-      context "with an existing post" do
-        let :body do
-          build_form({url: '/categories'}, Category.new) do |f|
-            allow(f.object.posts.build).to receive(:new_record?).and_return(false)
-            f.has_many :posts, allow_destroy: true do |p|
-              p.input :title
-            end
-          end
+      shared_examples_for "has many with allow_destroy = true" do |child_num|
+        it "should render the nested form" do
+          expect(body).to have_selector("input[name='category[posts_attributes][#{child_num}][title]']")
         end
 
         it "should include a boolean field for _destroy" do
-          expect(body).to have_selector("input[name='category[posts_attributes][0][_destroy]']")
+          expect(body).to have_selector("input[name='category[posts_attributes][#{child_num}][_destroy]']")
         end
 
         it "should have a check box with 'Remove' as its label" do
-          expect(body).to have_selector("label[for=category_posts_attributes_0__destroy]", text: "Delete")
+          expect(body).to have_selector("label[for=category_posts_attributes_#{child_num}__destroy]", text: "Delete")
         end
 
         it "should wrap the destroy field in an li with class 'has_many_delete'" do
@@ -584,22 +641,143 @@ describe ActiveAdmin::FormBuilder do
         end
       end
 
-      context "with a new post" do
+      shared_examples_for "has many with allow_destroy = false" do |child_num|
+        it "should render the nested form" do
+          expect(body).to have_selector("input[name='category[posts_attributes][#{child_num}][title]']")
+        end
+
+        it "should not have a boolean field for _destroy" do
+          expect(body).not_to have_selector("input[name='category[posts_attributes][#{child_num}][_destroy]']")
+        end
+
+        it "should not have a check box with 'Remove' as its label" do
+          expect(body).not_to have_selector("label[for=category_posts_attributes_#{child_num}__destroy]", text: "Remove")
+        end
+      end
+
+      shared_examples_for "has many with allow_destroy as String, Symbol or Proc" do |allow_destroy_option|
         let :body do
+          s = self
           build_form({url: '/categories'}, Category.new) do |f|
-            f.object.posts.build
-            f.has_many :posts, allow_destroy: true do |p|
+            s.instance_exec do
+              allow(f.object.posts.build).to receive(:foo?).and_return(true)
+              allow(f.object.posts.build).to receive(:foo?).and_return(false)
+
+              f.object.posts.each do |post|
+                allow(post).to receive(:new_record?).and_return(false)
+              end
+            end
+            f.has_many :posts, allow_destroy: allow_destroy_option do |p|
               p.input :title
             end
           end
         end
 
-        it "should not have a boolean field for _destroy" do
-          expect(body).not_to have_selector("input[name='category[posts_attributes][0][_destroy]']")
+        context 'for the child that responds with true' do
+          it_behaves_like "has many with allow_destroy = true", 0
         end
 
-        it "should not have a check box with 'Remove' as its label" do
-          expect(body).not_to have_selector("label[for=category_posts_attributes_0__destroy]", text: "Remove")
+        context 'for the child that responds with false' do
+          it_behaves_like "has many with allow_destroy = false", 1
+        end
+      end
+
+      context "with an existing post" do
+        context "with allow_destroy = true" do
+          let :body do
+            s = self
+            build_form({url: '/categories'}, Category.new) do |f|
+              s.instance_exec do
+                allow(f.object.posts.build).to receive(:new_record?).and_return(false)
+              end
+              f.has_many :posts, allow_destroy: true do |p|
+                p.input :title
+              end
+            end
+          end
+
+          it_behaves_like "has many with allow_destroy = true", 0
+        end
+
+        context "with allow_destroy = false" do
+          let :body do
+            s = self
+            build_form({url: '/categories'}, Category.new) do |f|
+              s.instance_exec do
+                allow(f.object.posts.build).to receive(:new_record?).and_return(false)
+              end
+              f.has_many :posts, allow_destroy: false do |p|
+                p.input :title
+              end
+            end
+          end
+
+          it_behaves_like "has many with allow_destroy = false", 0
+        end
+
+        context "with allow_destroy = nil" do
+          let :body do
+            s = self
+            build_form({url: '/categories'}, Category.new) do |f|
+              s.instance_exec do
+                allow(f.object.posts.build).to receive(:new_record?).and_return(false)
+              end
+              f.has_many :posts, allow_destroy: nil do |p|
+                p.input :title
+              end
+            end
+          end
+
+          it_behaves_like "has many with allow_destroy = false", 0
+        end
+
+        context "with allow_destroy as Symbol" do
+          it_behaves_like("has many with allow_destroy as String, Symbol or Proc", :foo?)
+        end
+
+        context "with allow_destroy as String" do
+          it_behaves_like("has many with allow_destroy as String, Symbol or Proc", "foo?")
+        end
+
+        context "with allow_destroy as proc" do
+          it_behaves_like("has many with allow_destroy as String, Symbol or Proc",
+                          Proc.new { |child| child.foo? })
+        end
+
+        context "with allow_destroy as lambda" do
+          it_behaves_like("has many with allow_destroy as String, Symbol or Proc",
+                          lambda { |child| child.foo? })
+        end
+
+        context "with allow_destroy as any other expression that evaluates to true" do
+          let :body do
+            s = self
+            build_form({url: '/categories'}, Category.new) do |f|
+              s.instance_exec do
+                allow(f.object.posts.build).to receive(:new_record?).and_return(false)
+              end
+              f.has_many :posts, allow_destroy: Object.new do |p|
+                p.input :title
+              end
+            end
+          end
+
+          it_behaves_like "has many with allow_destroy = true", 0
+        end
+      end
+
+      context "with a new post" do
+        context "with allow_destroy = true" do
+          let :body do
+            build_form({url: '/categories'}, Category.new) do |f|
+              f.object.posts.build
+              f.has_many :posts, allow_destroy: true do |p|
+                p.input :title
+              end
+            end
+          end
+
+          it_behaves_like "has many with allow_destroy = false", 0
         end
       end
     end
@@ -765,15 +943,15 @@ describe ActiveAdmin::FormBuilder do
     "[:title].each{ |r| f.input r }"               => "post_title",
     "[:title].map { |r| f.input r }"               => "post_title",
   }.each do |source, selector|
-   it "should properly buffer `#{source}`" do
-     body = build_form do |f|
-       f.inputs do
-         eval source
-         eval source
-       end
-     end
-     expect(body).to have_selector("[id=#{selector}]", count: 2)
-   end
+    it "should properly buffer `#{source}`" do
+      body = build_form do |f|
+        f.inputs do
+          eval source
+          eval source
+        end
+      end
+      expect(body).to have_selector("[id=#{selector}]", count: 2)
+    end
   end
 
   describe "datepicker input" do

@@ -1,3 +1,6 @@
+---
+redirect_from: /docs/12-arbre-components.html
+---
 # Arbre Components
 
 Arbre allows the creation of shareable and extendable HTML components and is
@@ -19,7 +22,7 @@ ActiveAdmin.register Post do
         row 'Tags' do
           post.tags.each do |tag|
             a tag, href: admin_post_path(q: {tagged_with_contains: tag})          
-            text_node "&nbsp".html_safe
+            text_node "&nbsp;".html_safe
           end
         end
       end
@@ -56,7 +59,7 @@ the rest.
 
 #### Simple Columns
 
-To create simple columnns, use the `columns` method. Within the block, call
+To create simple columns, use the `columns` method. Within the block, call
 the #column method to create a new column.
 
 ```ruby
@@ -147,4 +150,27 @@ status_tag 'active', :ok
 
 status_tag 'active', :ok, class: 'important', id: 'status_123', label: 'on'
 # => <span class='status_tag active ok important' id='status_123'>on</span>
+```
+
+## Tabs
+
+The Tabs component is helpful for saving page real estate. The first tab will be
+the one open when the page initially loads and the rest hidden. You can click
+each tab to toggle back and forth between them. Arbre supports unlimited number
+of tabs.
+
+```ruby
+tabs do
+  tab :active do
+    table_for orders.active do
+      ...
+    end
+  end
+
+  tab :inactive do
+    table_for orders.inactive do
+      ...
+    end
+  end
+end
 ```

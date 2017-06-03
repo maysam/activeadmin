@@ -27,14 +27,18 @@ module ActiveAdmin
   class Namespace
     RegisterEvent = 'active_admin.namespace.register'.freeze
 
-    attr_reader :application, :resources, :name, :menus
+    attr_reader :application, :resources, :menus
 
     def initialize(application, name)
       @application = application
-      @name = name.to_s.underscore.to_sym
+      @name = name.to_s.underscore
       @resources = ResourceCollection.new
       register_module unless root?
       build_menu_collection
+    end
+
+    def name
+      @name.to_sym
     end
 
     # Register a resource into this namespace. The preffered method to access this is to
@@ -45,11 +49,11 @@ module ActiveAdmin
 
       # Register the resource
       register_resource_controller(config)
-      parse_registration_block(config, resource_class, &block) if block_given?
+      parse_registration_block(config, &block) if block_given?
       reset_menu!
 
       # Dispatch a registration event
-      ActiveAdmin::Event.dispatch ActiveAdmin::Resource::RegisterEvent, config
+      ActiveSupport::Notifications.publish ActiveAdmin::Resource::RegisterEvent, config
 
       # Return the config
       config
@@ -78,8 +82,11 @@ module ActiveAdmin
     #   Namespace.new(:root).module_name # => nil
     #
     def module_name
-      return nil if root?
-      @module_name ||= name.to_s.camelize
+      root? ? nil : @name.camelize
+    end
+
+    def route_prefix
+      root? ? nil : @name
     end
 
     # Unload all the registered resources for this namespace
@@ -194,7 +201,7 @@ module ActiveAdmin
       resources.each do |resource|
         parent = (module_name || 'Object').constantize
         name   = resource.controller_name.split('::').last
-        parent.send(:remove_const, name) if parent.const_defined? name
+        parent.send(:remove_const, name) if parent.const_defined?(name, false)
 
         # Remove circular references
         resource.controller.active_admin_config = nil
@@ -218,8 +225,8 @@ module ActiveAdmin
       config.controller.active_admin_config = config
     end
 
-    def parse_registration_block(config, resource_class, &block)
-      config.dsl = ResourceDSL.new(config, resource_class)
+    def parse_registration_block(config, &block)
+      config.dsl = ResourceDSL.new(config)
       config.dsl.run_registration_block(&block)
     end
 

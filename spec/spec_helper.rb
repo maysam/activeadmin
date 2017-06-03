@@ -1,17 +1,16 @@
-$LOAD_PATH.unshift(File.dirname(__FILE__))
-$LOAD_PATH << File.expand_path('../support', __FILE__)
-
-ENV['BUNDLE_GEMFILE'] = File.expand_path('../../Gemfile', __FILE__)
-require "bundler"
-Bundler.setup
-
-require 'detect_rails_version'
-ENV['RAILS'] = detect_rails_version
-
 require 'simplecov'
 
-SimpleCov.start do
-  add_filter 'spec/'
-  add_filter 'features/'
-  add_filter 'bundle/' # for Travis
+# @todo: Always run simplecov again once
+# https://github.com/colszowka/simplecov/issues/404,
+# https://github.com/glebm/i18n-tasks/issues/221 are fixed
+if ENV['COVERAGE'] == 'true'
+  SimpleCov.start do
+    add_filter 'spec/'
+    add_filter 'features/'
+  end
+end
+
+if ENV['CI'] == 'true'
+  require 'codecov'
+  SimpleCov.formatter = SimpleCov::Formatter::Codecov
 end

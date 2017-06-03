@@ -2,7 +2,7 @@ require 'rails_helper'
 
 require 'active_admin/abstract_view_factory'
 
-describe ActiveAdmin::AbstractViewFactory do
+RSpec.describe ActiveAdmin::AbstractViewFactory do
 
   let(:view_factory){ ActiveAdmin::AbstractViewFactory.new }
   let(:view){ Class.new }
@@ -74,6 +74,5 @@ describe ActiveAdmin::AbstractViewFactory do
       expect(factory.my_subclassed_view).to eq "From Subclass"
     end
   end
-
 
 end

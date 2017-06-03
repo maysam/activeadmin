@@ -116,7 +116,7 @@ module ActiveAdmin
 
       # Either add/remove the batch action
       unless options == false
-        config.add_batch_action( sym, title, options, &block )
+        config.add_batch_action(sym, title, options, &block)
       else
         config.remove_batch_action sym
       end
@@ -163,11 +163,5 @@ module ActiveAdmin
       config.sidebar_sections << ActiveAdmin::SidebarSection.new(name, options, &block)
     end
 
-    def decorate_with(decorator_class)
-      # Force storage as a string. This will help us with reloading issues.
-      # Assuming decorator_class.to_s will return the name of the class allows
-      # us to handle a string or a class.
-      config.decorator_class_name = "::#{ decorator_class }"
-    end
   end
 end

@@ -39,9 +39,9 @@ module ActiveAdmin
         end
 
         # Add a table cell for each item
-        @collection.each_with_index do |item, i|
-          within @tbody.children[i] do
-            build_table_cell col, item
+        @collection.each_with_index do |resource, index|
+          within @tbody.children[index] do
+            build_table_cell col, resource
           end
         end
       end
@@ -85,7 +85,7 @@ module ActiveAdmin
         @tbody = tbody do
           # Build enough rows for our collection
           @collection.each do |elem|
-            classes = [cycle('odd', 'even')]
+            classes = [helpers.cycle('odd', 'even')]
 
             if @row_class
               classes << @row_class.call(elem)
@@ -96,30 +96,11 @@ module ActiveAdmin
         end
       end
 
-      def build_table_cell(col, item)
+      def build_table_cell(col, resource)
         td class: col.html_class do
-          render_data col.data, item
-        end
-      end
-
-      def render_data(data, item)
-        value = if data.is_a? Proc
-          data.call item
-        elsif item.respond_to? data
-          item.public_send data
-        elsif item.respond_to? :[]
-          item[data]
-        end
-        value = pretty_format(value) if data.is_a?(Symbol)
-        value = status_tag value     if is_boolean? data, item
-        value
-      end
-
-      def is_boolean?(data, item)
-        if item.respond_to? :has_attribute?
-          item.has_attribute?(data) &&
-            item.column_for_attribute(data) &&
-            item.column_for_attribute(data).type == :boolean
+          html = helpers.format_attribute(resource, col.data)
+          # Don't add the same Arbre twice, while still allowing format_attribute to call status_tag
+          current_arbre_element << html unless current_arbre_element.children.include? html
         end
       end
 
@@ -128,7 +109,7 @@ module ActiveAdmin
       #   current_sort[1] #=> asc | desc
       def current_sort
         @current_sort ||= begin
-          order_clause = OrderClause.new params[:order]
+          order_clause = active_admin_config.order_clause.new(active_admin_config, params[:order])
 
           if order_clause.valid?
             [order_clause.field, order_clause.order]
@@ -158,7 +139,7 @@ module ActiveAdmin
 
         attr_accessor :title, :data , :html_class
 
-        def initialize(*args, &block) 
+        def initialize(*args, &block)
           @options = args.extract_options!
 
           @title = args[0]
@@ -166,7 +147,7 @@ module ActiveAdmin
           if @options.has_key?(:class)
             html_classes << @options.delete(:class)
           elsif @title.present?
-            html_classes << "col-#{@title.to_s.parameterize('_')}"
+            html_classes << "col-#{ActiveAdmin::Dependency.rails.parameterize(@title.to_s)}"
           end
           @html_class = html_classes.join(' ')
           @data = args[1] || args[0]

@@ -1,3 +1,6 @@
+---
+redirect_from: /docs/2-resource-customization.html
+---
 # Working with Resources
 
 Every Active Admin resource corresponds to a Rails model. So before creating a
@@ -15,9 +18,6 @@ end
 ```
 
 ## Setting up Strong Parameters
-
-Rails 4 replaces `attr_accessible` with [Strong Parameters](https://github.com/rails/strong_parameters),
-which moves attribute whitelisting from the model to the controller.
 
 Use the `permit_params` method to define which attributes may be changed:
 
@@ -65,6 +65,15 @@ ActiveAdmin.register Post do
 end
 ```
 
+If your resource is nested, declare `permit_params` after `belongs_to`:
+
+```ruby
+ActiveAdmin.register Post do
+  belongs_to :user
+  permit_params :title, :content, :publisher_id
+end
+```
+
 The `permit_params` call creates a method called `permitted_params`. You should use this method when overriding `create` or `update` actions:
 
 ```ruby
@@ -92,6 +101,19 @@ All CRUD actions are enabled by default. These can be disabled for a given resou
 ActiveAdmin.register Post do
   actions :all, except: [:update, :destroy]
 end
+```
+
+## Renaming Action Items
+
+You can use translations to override labels and page titles for actions such as new, edit, and destroy by providing a resource specific translation.
+For example, to change 'New Offer' to 'Make an Offer' add the following in config/locales/[en].yml:
+
+```
+en:
+  active_admin:
+    resources:
+      offer:
+        new_model: 'Make an Offer'
 ```
 
 ## Rename the Resource
@@ -297,6 +319,9 @@ end
 
 ## Customizing resource retrieval
 
+Our controllers are built on [Inherited Resources](https://github.com/activeadmin/inherited_resources),
+so you can use [all of its features](https://github.com/activeadmin/inherited_resources#overwriting-defaults).
+
 If you need to customize the collection properties, you can overwrite the `scoped_collection` method.
 
 ```ruby
@@ -316,14 +341,24 @@ If you need to completely replace the record retrieving code (e.g., you have a c
 ActiveAdmin.register Post do
   controller do
     def find_resource
-      Post.where(id: params[:id]).first!
+      scoped_collection.where(id: params[:id]).first!
     end
   end
 end
 ```
 
-Our controllers are built on [Inherited Resources](https://github.com/josevalim/inherited_resources),
-so you can use [all of its features](https://github.com/josevalim/inherited_resources#overwriting-defaults).
+Note that if you use an authorization library like CanCan, you should be careful to not
+write code like this, otherwise **your authorization rules won't be applied**:
+
+```ruby
+ActiveAdmin.register Post do
+  controller do
+    def find_resource
+      Post.where(id: params[:id]).first!
+    end
+  end
+end
+```
 
 ## Belongs To
 
@@ -351,8 +386,8 @@ ActiveAdmin.register Project do
 
   sidebar "Project Details", only: [:show, :edit] do
     ul do
-      li link_to "Tickets",    admin_project_tickets_path(project)
-      li link_to "Milestones", admin_project_milestones_path(project)
+      li link_to "Tickets",    admin_project_tickets_path(resource)
+      li link_to "Milestones", admin_project_milestones_path(resource)
     end
   end
 end
