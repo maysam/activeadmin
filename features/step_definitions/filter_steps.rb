@@ -25,15 +25,24 @@ end
 Then(/^I should( not)? have parameter "([^"]*)"( with value "([^"]*)")?$/) do |negative, key, compare_val, value|
   query = URI(page.current_url).query
   if query.nil?
-    expect(negative).to be_truthy
+    expect(negative).to eq true
   else
     params = Rack::Utils.parse_query query
     if compare_val
       expect(params[key]).to_not eq value if negative
       expect(params[key]).to eq value unless negative
     else
-      expect(params[key]).to be_nil if negative
+      expect(params[key]).to eq nil if negative
       expect(params[key]).to be_present unless negative
     end
   end
+end
+
+Then /^I should see current filter "([^"]*)" equal to "([^"]*)"( with label "([^"]*)")?$/ do |name, value, label_block, label|
+  expect(page).to have_css "li.current_filter_#{name} span", text: label if label_block
+  expect(page).to have_css "li.current_filter_#{name} b", text: value
+end
+
+Then /^I should see link "([^"]*)" in current filters/ do |label|
+  expect(page).to have_css "li.current_filter b a", text: label
 end

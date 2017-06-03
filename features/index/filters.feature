@@ -9,18 +9,19 @@ Feature: Index Filtering
     When I am on the index page for posts
     Then I should see "Displaying all 3 Posts"
     And I should see the following filters:
-     | Author       | select     |
-     | Category     | select     |
-     | Title        | string     |
-     | Body         | string     |
-     | Published at | date range |
-     | Created at   | date range |
-     | Updated at   | date range |
+     | Author         | select     |
+     | Category       | select     |
+     | Title          | string     |
+     | Body           | string     |
+     | Published date | date range |
+     | Created at     | date range |
+     | Updated at     | date range |
 
     When I fill in "Title" with "Hello World 2"
     And I press "Filter"
     And I should see 1 posts in the table
     And I should see "Hello World 2" within ".index_table"
+    And I should see current filter "title_contains" equal to "Hello World 2" with label "Title contains"
 
   Scenario: Filtering posts with no results
     Given 3 posts exist
@@ -37,6 +38,24 @@ Feature: Index Filtering
     And I should not see a sortable table header
     And I should not see pagination
     And I should see "No Posts found"
+
+  Scenario: Filtering posts with pagination
+    Given 7 posts with the title "Hello World 3" exist
+    And 1 post with the title "Hello World 4" exist
+    And an index configuration of:
+    """
+      ActiveAdmin.register Post do
+        config.per_page = 2
+      end
+    """
+    When I fill in "Title" with "Hello World 3"
+    And I press "Filter"
+
+    Then I follow "2"
+    Then I should see "Displaying Posts 3 - 4 of 7 in total"
+
+    Then I follow "3"
+    Then I should see "Displaying Posts 5 - 6 of 7 in total"
 
   Scenario: Filtering posts while not on the first page
     Given 9 posts exist
@@ -60,7 +79,7 @@ Feature: Index Filtering
     And an index configuration of:
     """
       ActiveAdmin.register Post do
-        filter :author, :as => :check_boxes
+        filter :author, as: :check_boxes
       end
     """
     When I press "Filter"
@@ -74,7 +93,7 @@ Feature: Index Filtering
     And an index configuration of:
     """
       ActiveAdmin.register Post do
-        filter :author, :as => :check_boxes
+        filter :author, as: :check_boxes
       end
     """
     When I check "Jane Doe"
@@ -82,6 +101,7 @@ Feature: Index Filtering
     Then I should see 1 posts in the table
     And I should see "Hello World" within ".index_table"
     And the "Jane Doe" checkbox should be checked
+    And I should see current filter "author_id_in" equal to "Jane Doe"
 
   Scenario: Disabling filters
     Given an index configuration of:
@@ -104,6 +124,7 @@ Feature: Index Filtering
     Then I should see 1 categories in the table
     And I should see "Non-Fiction" within ".index_table"
     And I should not see "Mystery" within ".index_table"
+    And I should see current filter "posts_author_id_eq" equal to "Jane Doe"
 
   @javascript
   Scenario: Clearing filter preserves custom parameters
@@ -134,7 +155,7 @@ Feature: Index Filtering
     And an index configuration of:
     """
       ActiveAdmin.register Category do
-        filter :authors, :as => :check_boxes
+        filter :authors, as: :check_boxes
       end
     """
     When I press "Filter"
@@ -142,6 +163,7 @@ Feature: Index Filtering
     And I should see "Mystery" within ".index_table"
     And I should see "Non-Fiction" within ".index_table"
     And the "Jane Doe" checkbox should not be checked
+    And should not see a sidebar titled "Search Status:"
 
   Scenario: Checkboxes - Filtering categories via posts written by Jane Doe
     Given a category named "Mystery" exists
@@ -149,8 +171,9 @@ Feature: Index Filtering
     And an index configuration of:
     """
       ActiveAdmin.register Category do
-        filter :authors, :as => :check_boxes
+        filter :authors, as: :check_boxes
       end
+
     """
     When I check "Jane Doe"
     And I press "Filter"
@@ -158,4 +181,41 @@ Feature: Index Filtering
     And I should see "Non-Fiction" within ".index_table"
     And the "Jane Doe" checkbox should be checked
 
+  Scenario: Filtering posts by category
+    Given a category named "Mystery" exists
+    And a post with the title "Hello World" written by "Jane Doe" in category "Non-Fiction" exists
+    Given an index configuration of:
+    """
+      ActiveAdmin.register Category
+      ActiveAdmin.register Post do
+         filter :category
+      end
+    """
+    And I am on the index page for posts
 
+    When I select "Non-Fiction" from "Category"
+    And I press "Filter"
+    Then I should see a sidebar titled "Search Status:"
+    And I should see link "Non-Fiction" in current filters
+
+  Scenario: Enabling filters status sidebar
+    Given an index configuration of:
+    """
+      ActiveAdmin.application.current_filters = false
+      ActiveAdmin.register Post do
+        config.current_filters = true
+      end
+    """
+    And I press "Filter"
+    Then I should see a sidebar titled "Search Status:"
+
+  Scenario: Disabling filters status sidebar
+    Given an index configuration of:
+    """
+      ActiveAdmin.application.current_filters = true
+      ActiveAdmin.register Post do
+        config.current_filters = false
+      end
+    """
+    And I press "Filter"
+    Then I should not see a sidebar titled "Search Status:"

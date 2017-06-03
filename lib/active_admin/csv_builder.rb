@@ -22,7 +22,7 @@ module ActiveAdmin
     def self.default_for_resource(resource)
       new resource: resource do
         column :id
-        resource.content_columns.each { |c| column c.name.to_sym }
+        resource.content_columns.each { |c| column c }
       end
     end
 
@@ -39,25 +39,28 @@ module ActiveAdmin
       @columns << Column.new(name, @resource, column_transitive_options.merge(options), block)
     end
 
-    def build(controller, receiver)
-      @collection = controller.send(:find_collection, except: :pagination)
-      options = ActiveAdmin.application.csv_options.merge self.options
-      columns = exec_columns controller.view_context
+    def build(controller, csv)
+      @collection  = controller.send :find_collection, except: :pagination
+      columns      = exec_columns controller.view_context
+      options      = ActiveAdmin.application.csv_options.merge self.options
+      bom          = options.delete :byte_order_mark
+      column_names = options.delete(:column_names) { true }
+      csv_options  = options.except :encoding_options
 
-      if byte_order_mark = options.delete(:byte_order_mark)
-        receiver << byte_order_mark
+      csv << bom if bom
+
+      if column_names
+        csv << CSV.generate_line(columns.map{ |c| encode c.name, options }, csv_options)
       end
 
-      if options.delete(:column_names) { true }
-        receiver << CSV.generate_line(columns.map{ |c| encode c.name, options }, options)
-      end
-
-      (1..paginated_collection.total_pages).each do |page_no|
-        paginated_collection(page_no).each do |resource|
-           resource = controller.send :apply_decorator, resource
-           receiver << CSV.generate_line(build_row(resource, columns, options), options)
+      (1..paginated_collection.total_pages).each do |page|
+        paginated_collection(page).each do |resource|
+          resource = controller.send :apply_decorator, resource
+          csv << CSV.generate_line(build_row(resource, columns, options), csv_options)
         end
       end
+
+      csv
     end
 
     def exec_columns(view_context = nil)
@@ -102,7 +105,7 @@ module ActiveAdmin
 
       def humanize_name(name, resource, humanize_name_option)
         if humanize_name_option
-          name.is_a?(Symbol) && resource.present? ? resource.human_attribute_name(name) : name.to_s.humanize
+          name.is_a?(Symbol) && resource ? resource.resource_class.human_attribute_name(name) : name.to_s.humanize
         else
           name.to_s
         end

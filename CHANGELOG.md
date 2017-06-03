@@ -1,12 +1,26 @@
 # Changelog
-## 1.0.0 [☰](https://github.com/activeadmin/activeadmin/compare/v0.6.3...master) (unreleased)
+
+## Master (unreleased)
+
+### Enhancements
+
+##### Minor
+
+* Added `scopes_show_count` configuration to  setup show_count attribute for scopes globally [#4950][] by [@Fivell][]
+* Allow custom panel title given with `attributes_table` [#4940][] by [@ajw725][]
+
+## 1.0.0 [☰](https://github.com/activeadmin/activeadmin/compare/v0.6.3...master)
 
 ### Breaking Changes
 
 * Rename `allow_comments` to `comments` for more consistent naming [#3695][] by [@pranas][]
 * JavaScript `window.AA` has been removed, use `window.ActiveAdmin` [#3606][] by [@timoschilling][]
 * `f.form_buffers` has been removed [#3486][] by [@varyonic][]
-* iconic has been removed [#3553][] by [@timoschilling][]
+* Iconic has been removed [#3553][] by [@timoschilling][]
+* `config.show_comments_in_menu` has been removed, see `config.comments_menu` [#4187][] by [@drn][]
+* Rails 3.2 & Ruby 1.9.3 support has been dropped [#4848][] [@deivid-rodriguez][]
+* Ruby 2.0.0 support has been dropped [#4851][] [@deivid-rodriguez][]
+* Rails 4.0 & 4.1 support has been dropped [#4855][] [@deivid-rodriguez][]
 
 ### Enhancements
 
@@ -15,9 +29,16 @@
 * Migration from Metasearch to Ransack [#1979][] by [@seanlinsley][]
 * Rails 4 support [#2326][] by many people <3
 * Rails 4.2 support [#3731][] by [@gonzedge][] and [@timoschilling][]
+* Rails 5 support [#4254][] by [@seanlinsley][]
+* Rails 5.1 support [#4882][] by [@varyonic][]
 
 #### Minor
 
+* "Create another" checkbox for the new resource page. [#4477][] by [@bolshakov][]
+* Page supports belongs_to [#4759][] by [@Fivell][] and [@zorab47][]
+* Support for custom sorting strategies [#4768][] by [@Fivell][]
+* Stream CSV downloads as they're generated [#3038][] by [@craigmcnamara][]
+  * Disable streaming in development for easier debugging [#3535][] by [@seanlinsley][]
 * Improved code reloading [#3783][] by [@chancancode][]
 * Do not auto link to inaccessible actions [#3686][] by [@pranas][]
 * Allow to enable comments on per-resource basis [#3695][] by [@pranas][]
@@ -43,9 +64,12 @@
 ```ruby
 index download_links: ->{ can?(:view_all_download_links) || [:pdf] }
 ```
+* Comments menu can be customized via configuration passed to `config.comments_menu` [#4187][] by [@drn][]
+* Added `config.route_options` to namespace to customize routes [#4467][] by [@stereoscott[]]
 
 ### Security Fixes
 
+* Prevents access to formats that the user not permitted to see [#4867][] by [@Fivell][] and [@timoschilling][] 
 * Prevents potential DOS attack via Ruby symbols [#1926][] by [@seanlinsley][]
   * [this isn't an issue for those using Ruby >= 2.2](http://rubykaigi.org/2014/presentation/S-NarihiroNakamura)
 
@@ -55,6 +79,20 @@ index download_links: ->{ can?(:view_all_download_links) || [:pdf] }
 * "New" action item now only shows up on the index page bf659bc by [@seanlinsley][]
 * Fixes comment creation bug with aliased resources 9a082486 by [@seanlinsley][]
 * Fixes the deletion of `:if` and `:unless` from filters [#2523][] by [@PChambino][]
+
+### Deprecations
+
+* `ActiveAdmin::Event` (`ActiveAdmin::EventDispatcher`) [#3435][] by [@timoschilling][]
+  `ActiveAdmin::Event` will be removed in a future version, ActiveAdmin switched
+  to use `ActiveSupport::Notifications`.
+  NOTE: The blog parameters has changed:
+```ruby
+ActiveSupport::Notifications.subscribe ActiveAdmin::Application::BeforeLoadEvent do |event, *args|
+  # some code
+end
+
+ActiveSupport::Notifications.publish ActiveAdmin::Application::BeforeLoadEvent, "some data"
+```
 
 ## Previous Changes
 
@@ -71,27 +109,46 @@ Please check [0-6-stable](https://github.com/activeadmin/activeadmin/blob/0-6-st
 [#2541]: https://github.com/activeadmin/activeadmin/issues/2541
 [#2544]: https://github.com/activeadmin/activeadmin/issues/2544
 [#2545]: https://github.com/activeadmin/activeadmin/issues/2545
+[#3038]: https://github.com/activeadmin/activeadmin/issues/3038
 [#3075]: https://github.com/activeadmin/activeadmin/issues/3075
 [#3463]: https://github.com/activeadmin/activeadmin/issues/3463
 [#3464]: https://github.com/activeadmin/activeadmin/issues/3464
 [#3486]: https://github.com/activeadmin/activeadmin/issues/3486
 [#3519]: https://github.com/activeadmin/activeadmin/issues/3519
+[#3535]: https://github.com/activeadmin/activeadmin/issues/3535
 [#3553]: https://github.com/activeadmin/activeadmin/issues/3553
 [#3606]: https://github.com/activeadmin/activeadmin/issues/3606
 [#3686]: https://github.com/activeadmin/activeadmin/issues/3686
 [#3695]: https://github.com/activeadmin/activeadmin/issues/3695
 [#3731]: https://github.com/activeadmin/activeadmin/issues/3731
 [#3783]: https://github.com/activeadmin/activeadmin/issues/3783
-[@PChambino]: https://github.com/PChambino
-[@TimPetricola]: https://github.com/TimPetricola
+[#4187]: https://github.com/activeadmin/activeadmin/issues/4187
+[#4254]: https://github.com/activeadmin/activeadmin/issues/4254
+[#4477]: https://github.com/activeadmin/activeadmin/pull/4477
+[#4759]: https://github.com/activeadmin/activeadmin/pull/4759
+[#4768]: https://github.com/activeadmin/activeadmin/pull/4768
+[#4848]: https://github.com/activeadmin/activeadmin/pull/4848
+[#4851]: https://github.com/activeadmin/activeadmin/pull/4851
+[#4867]: https://github.com/activeadmin/activeadmin/pull/4867
+[#4882]: https://github.com/activeadmin/activeadmin/pull/4882
+[#4950]: https://github.com/activeadmin/activeadmin/pull/4950
+
+
+[@bolshakov]: https://github.com/bolshakov
 [@chancancode]: https://github.com/chancancode
+[@craigmcnamara]: https://github.com/craigmcnamara
+[@deivid-rodriguez]: https://github.com/deivid-rodriguez
 [@dmitry]: https://github.com/dmitry
+[@drn]: https://github.com/drn
+[@Fivell]: https://github.com/Fivell
 [@gonzedge]: https://github.com/gonzedge
 [@johnnyshields]: https://github.com/johnnyshields
+[@PChambino]: https://github.com/PChambino
 [@potatosalad]: https://github.com/potatosalad
 [@pranas]: https://github.com/pranas
 [@seanlinsley]: https://github.com/seanlinsley
 [@shekibobo]: https://github.com/shekibobo
 [@timoschilling]: https://github.com/timoschilling
+[@TimPetricola]: https://github.com/TimPetricola
 [@varyonic]: https://github.com/varyonic
 [@zorab47]: https://github.com/zorab47

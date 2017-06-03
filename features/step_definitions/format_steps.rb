@@ -24,7 +24,7 @@ Then /^I should download a CSV file with "([^"]*)" separator for "([^"]*)" conta
       expected_row.each_with_index do |expected_cell, col_index|
         cell = csv.try(:[], row_index).try(:[], col_index)
         if expected_cell.blank?
-          expect(cell).to be_nil
+          expect(cell).to eq nil
         else
           expect(cell || '').to match /#{expected_cell}/
         end
@@ -49,4 +49,8 @@ end
 
 Then /^the encoding of the CSV file should be "([^"]*)"$/ do |text|
   expect(page.driver.response.body.encoding).to be Encoding.find(Encoding.aliases[text] || text)
+end
+
+Then /^access denied$/ do
+  expect(page).to have_content(I18n.t("active_admin.access_denied.message"))
 end

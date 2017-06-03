@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe ActiveAdmin::Views::SiteTitle do
+RSpec.describe ActiveAdmin::Views::SiteTitle do
 
   let(:helpers){ mock_action_view }
 
@@ -72,7 +72,5 @@ describe ActiveAdmin::Views::SiteTitle do
     end
 
   end
-
-
 
 end

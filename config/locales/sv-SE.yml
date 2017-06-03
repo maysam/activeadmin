@@ -32,12 +32,13 @@
         greater_than: "Större än"
         less_than: "Mindre än"
     search_status:
-      headline: "Scope:"
+      headline: "Sök status:"
+      current_scope: "Scope:"
       current_filters: "Nuvarande filter:"
       no_current_filters: "Inga"
     status_tag:
       "yes": "Ja"
-      "no": "Ingen"
+      "no": "Nej"
     main_content: "Implementera %{model}#main_content för att kunna visa något."
     logout: "Logga ut"
     powered_by: "Powered by %{active_admin} %{version}"
@@ -67,7 +68,6 @@
         one: "Lyckades radera 1 %{model}"
         other: "Lyckades radera %{count} %{plural_model}"
       selection_toggle_explanation: "(Toggle Selection)"
-      link: "Skapa en"
       action_label: "%{title} Markerad"
       labels:
         destroy: "Radera"
@@ -77,7 +77,6 @@
       author_type: "Författar typ"
       body: "Innehåll"
       author: "Författare"
-      title: "Kommentar"
       add: "Lägg till kommentar"
       resource: "Resurs"
       no_comments_yet: "Inga kommentarer än."

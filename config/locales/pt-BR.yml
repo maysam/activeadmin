@@ -32,7 +32,8 @@ pt-BR:
         greater_than: "Maior Que"
         less_than: "Menor Que"
     search_status:
-      headline: "Em:"
+      headline: "Buscou:"
+      current_scope: "Em:"
       current_filters: "Filtros escolhidos:"
       no_current_filters: "Nenhum"
     status_tag:
@@ -67,17 +68,18 @@ pt-BR:
         one: "Excluiu com sucesso 1 %{model}"
         other: "Excluiu com sucesso %{count} %{plural_model}"
       selection_toggle_explanation: "(Alternar Seleção)"
-      link: "Novo"
       action_label: "%{title} Selecionado"
       labels:
         destroy: "Excluir"
     comments:
+      created_at: "Criado em"
       resource_type: "Tipo de Objeto"
       author_type: "Tipo de Autor"
       body: "Conteúdo"
       author: "Autor"
-      title: "Comentário"
       add: "Adicionar Comentário"
+      delete: "Deletar comentário"
+      delete_confirmation: "Tem certeza que deseja excluir este comentário?"
       resource: "Objeto"
       no_comments_yet: "Nenhum comentário."
       author_missing: "Anônimo"

@@ -9,7 +9,7 @@ Feature: Show - Page Title
     Given a show configuration of:
     """
       ActiveAdmin.register Post do
-        show :title => :title
+        show title: :title
       end
     """
     Then I should see the page title "Hello World"
@@ -18,7 +18,7 @@ Feature: Show - Page Title
     Given a show configuration of:
     """
       ActiveAdmin.register Post do
-        show :title => "Title From String"
+        show title: "Title From String"
       end
     """
     Then I should see the page title "Title From String"
@@ -27,7 +27,7 @@ Feature: Show - Page Title
     Given a show configuration of:
     """
       ActiveAdmin.register Post do
-        show :title => proc{|post| "Title: " + post.title }
+        show title: proc{|post| "Title: " + post.title }
       end
     """
     Then I should see the page title "Title: Hello World"
@@ -51,7 +51,7 @@ Feature: Show - Page Title
     """
       ActiveAdmin.register Post do
         controller do
-          before_filter { @page_title = "List of #{resource_class.model_name.plural}" }
+          before_action { @page_title = "List of #{resource_class.model_name.plural}" }
         end
       end
     """

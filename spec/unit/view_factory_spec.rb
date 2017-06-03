@@ -2,11 +2,11 @@ require 'rails_helper'
 
 def it_should_have_view(key, value)
   it "should have #{value} for view key '#{key}'" do
-    expect(subject.send(key)).to  eq value
+    expect(subject.send(key)).to eq value
   end
 end
 
-describe ActiveAdmin::ViewFactory do
+RSpec.describe ActiveAdmin::ViewFactory do
 
   it_should_have_view :global_navigation,    ActiveAdmin::Views::TabbedNavigation
   it_should_have_view :utility_navigation,   ActiveAdmin::Views::TabbedNavigation

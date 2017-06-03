@@ -73,10 +73,6 @@ module ActiveAdmin
       false
     end
 
-    def belongs_to?
-      false
-    end
-
     def add_default_action_items
     end
 
@@ -86,6 +82,29 @@ module ActiveAdmin
     # Clears all the custom actions this page knows about
     def clear_page_actions!
       @page_actions = []
+    end
+
+    def belongs_to(target, options = {})
+      @belongs_to = Resource::BelongsTo.new(self, target, options)
+      self.navigation_menu_name = target unless @belongs_to.optional?
+      controller.send :belongs_to, target, options.dup
+    end
+
+    def belongs_to_config
+      @belongs_to
+    end
+
+    # Do we belong to another resource?
+    def belongs_to?
+      !!belongs_to_config
+    end
+
+    def breadcrumb
+      instance_variable_defined?(:@breadcrumb) ? @breadcrumb : namespace.breadcrumb
+    end
+
+    def order_clause
+      @order_clause || namespace.order_clause
     end
 
   end

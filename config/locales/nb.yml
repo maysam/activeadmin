@@ -31,6 +31,11 @@ nb:
         ends_with: "Slutter med"
         greater_than: "Større enn"
         less_than: "Mindre enn"
+    search_status:
+      headline: "Søkestatus:"
+      current_scope: "Søkeområde:"
+      current_filters: "Gjeldende filtre:"
+      no_current_filters: "Ingen"
     status_tag:
       "yes": "Ja"
       "no": "Nei"
@@ -61,14 +66,12 @@ nb:
         one: "Slettet én %{model}"
         other: "Slettet %{count} %{plural_model}"
       selection_toggle_explanation: "(Toggle Selection)"
-      link: "Opprett en"
       action_label: "%{title} valgt"
       labels:
         destroy: "Slett"
     comments:
       body: "Body"
       author: "Author"
-      title: "Comment"
       add: "Add Comment"
       resource: "Resource"
       no_comments_yet: "No comments yet."
@@ -88,7 +91,7 @@ nb:
         title: "Opprett brukerkonto"
         submit: "Opprett"
       login:
-        title: "Logg inn"
+        title: "Innlogging"
         remember_me: "Husk meg"
         submit: "Logg inn"
       reset_password:

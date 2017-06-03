@@ -32,7 +32,8 @@
         greater_than: "大於"
         less_than: "小於"
     search_status:
-      headline: "子集："
+      headline: "搜尋條件:"
+      current_scope: "子集："
       current_filters: "目前篩選條件："
       no_current_filters: "無"
     status_tag:
@@ -67,17 +68,18 @@
         one: "成功刪除 1 %{model}"
         other: "成功刪除 %{count} %{plural_model}"
       selection_toggle_explanation: "（切換選取）"
-      link: "建立一個"
       action_label: "%{title} 已選取"
       labels:
         destroy: "刪除"
     comments:
+      created_at: "建立"
       resource_type: "資源種類"
       author_type: "作者身份"
       body: "內文"
       author: "作者"
-      title: "評論"
       add: "新增評論"
+      delete: "刪除評論"
+      delete_confirmation: "你確定要刪除這些評論嗎？"
       resource: "資源"
       no_comments_yet: "尚無評論"
       author_missing: "匿名"
@@ -125,3 +127,8 @@
       turn_off_compatibility_view: "若您是使用 IE 9 或更新的版本，請確認<a href=\"http://windows.microsoft.com/zh-TW/windows7/webpages-look-incorrect-in-Internet-Explorer\">「相容性檢視」是關閉的</a>。"
     access_denied:
       message: "您沒有權限執行此項操作"
+    index_list:
+      table: "表格"
+      block: "清單"
+      grid: "格狀"
+      blog: "部落格"

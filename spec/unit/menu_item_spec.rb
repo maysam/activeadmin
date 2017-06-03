@@ -3,7 +3,7 @@ require 'active_admin/menu'
 require 'active_admin/menu_item'
 
 module ActiveAdmin
-  describe MenuItem do
+  RSpec.describe MenuItem do
 
     it "should have a label" do
       item = MenuItem.new(label: "Dashboard")
@@ -97,7 +97,7 @@ module ActiveAdmin
 
       context "with no parent" do
         it "should return an empty array" do
-         expect(item.ancestors).to eq []
+          expect(item.ancestors).to eq []
         end
       end
 
@@ -127,7 +127,6 @@ module ActiveAdmin
         end
       end
     end # accessing ancestory
-
 
     describe "#id" do
       it "should be normalized" do
